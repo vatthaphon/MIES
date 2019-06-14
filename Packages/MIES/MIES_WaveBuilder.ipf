@@ -203,6 +203,11 @@ static Function WB_StimsetNeedsUpdate(setName)
 	string stimsets
 	variable lastModStimSet, numWaves, numStimsets, i
 
+	// stimset wave note is too old
+	if(!WB_StimsetHasLatestNoteVersion(setName))
+		return 1
+	endif
+
 	// check if parameter waves were modified
 	stimsets = WB_StimsetRecursion(parent = setName)
 	stimsets = AddListItem(setName, stimsets)
@@ -225,6 +230,17 @@ static Function WB_StimsetNeedsUpdate(setName)
 	endfor
 
 	return 0
+End
+
+/// @brief Check if the stimset wave note has the latest version
+static Function WB_StimsetHasLatestNoteVersion(setName)
+	string setName
+
+	DFREF dfr = GetSetFolder(GetStimSetType(setName))
+	WAVE/Z/SDFR=dfr stimSet = $setName
+	ASSERT(WaveExists(stimSet), "stimset must exist")
+
+	return WB_GetWaveNoteEntryAsNumber(stimset, VERSION_ENTRY) >= STIMSET_NOTE_VERSION
 End
 
 /// @brief Check if parameter waves' are newer than the saved stimset
@@ -980,6 +996,8 @@ static Function/WAVE WB_MakeWaveBuilderWave(WP, WPT, SegWvType, stepCount, numEp
 
 		WAVE segmentWave = GetSegmentWave()
 		Concatenate/NP=0 {segmentWave}, WaveBuilderWave
+
+		print NOte(WaveBuilderWave)
 	endfor
 
 	// adjust epochID timestamps for stimset flipping
@@ -1432,6 +1450,7 @@ Function/S WB_GetWaveNoteEntry(stimset, entryType, [key, sweep, epoch])
 
 	switch(entryType)
 		case VERSION_ENTRY:
+			ASSERT(ParamIsDefault(key), "Unexpected key")
 			key = "Version"
 			sprintf re "^%s.*;$", key
 			break
@@ -1518,6 +1537,8 @@ Function/WAVE WB_GetPulsesFromPulseTrains(stimset, sweep, pulseToPulseLength)
 	numEpochs = WB_GetWaveNoteEntryAsNumber(stimset, STIMSET_ENTRY, key = "Epoch Count")
 	ASSERT(IsValidEpochNumber(numEpochs), "Invalid number of epochs")
 
+	Make/FREE/D/N=(numEpochs) pulseToPulseLengthPerEpoch = NaN
+
 	for(i = 0; i < numEpochs; i += 1)
 		epochType = WB_ToEpochType(WB_GetWaveNoteEntry(stimset, EPOCH_ENTRY, sweep = sweep, epoch = i, key = "Type"))
 
@@ -1526,7 +1547,7 @@ Function/WAVE WB_GetPulsesFromPulseTrains(stimset, sweep, pulseToPulseLength)
 			continue
 		endif
 
-		pulseToPulseLength = WB_GetWaveNoteEntryAsNumber(stimset, EPOCH_ENTRY, sweep = sweep, epoch = i, key = PULSE_TO_PULSE_LENGTH_KEY)
+		pulseToPulseLengthPerEpoch[i] = WB_GetWaveNoteEntryAsNumber(stimset, EPOCH_ENTRY, sweep = sweep, epoch = i, key = PULSE_TO_PULSE_LENGTH_KEY)
 		ASSERT(IsFinite(pulseToPulseLength), "Non-finite " + PULSE_TO_PULSE_LENGTH_KEY)
 
 		startTimesList = WB_GetWaveNoteEntry(stimset, EPOCH_ENTRY, sweep = sweep, epoch = i, key = PULSE_START_TIMES_KEY)
@@ -1548,6 +1569,15 @@ Function/WAVE WB_GetPulsesFromPulseTrains(stimset, sweep, pulseToPulseLength)
 	endfor
 
 	Sort allStartTimes, allStartTimes
+
+	WAVE pulseToPulseLengthPerEpochClean = GetUniqueEntries(pulseToPulseLengthPerEpoch)
+
+	if(DimSize(pulseToPulseLengthPerEpochClean, ROWS) == 1)
+		pulseToPulseLength = pulseToPulseLengthPerEpochClean[0]
+	else
+		// multiple differening pulse to pulse lengths are not returned
+		pulseToPulseLength = NaN
+	endif
 
 	return allStartTimes
 End

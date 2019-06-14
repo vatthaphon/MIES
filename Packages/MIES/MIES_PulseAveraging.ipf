@@ -400,23 +400,51 @@ Function/WAVE PA_GetPulseStartTimes(traceData, idx, region, channelTypeStr, [rem
 	return pulseStartTimes
 End
 
+static Function PA_GetPulseToPulseLengthFromNote(traceData, idx, region)
+	WAVE/T traceData
+	variable idx, region
+
+	variable sweepNo, pulseToPulseLength
+
+	WAVE numericalValues = $traceData[idx][%numericalValues]
+	WAVE textualValues = $traceData[idx][%textualValues]
+	sweepNo = str2num(traceData[idx][%sweepNumber])
+
+	WAVE/T/Z stimWaveNote = GetLastSetting(textualValues, sweepNo, "Stim Wave Note", DATA_ACQUISITION_MODE)
+
+	if(!WaveExists(stimWaveNote))
+		return NaN
+	endif
+
+	WAVE/Z setSweepCount = GetLastSetting(numericalValues, sweepNo, "Set sweep count", DATA_ACQUISITION_MODE)
+
+	Make/N=0 stimset
+	Note/K stimset, stimWaveNote[region]
+
+	WB_GetPulsesFromPulseTrains(stimset, setSweepCount[region], pulseToPulseLength)
+
+	if(pulseToPulseLength == 0)
+		return NaN
+	endif
+
+	return pulseToPulseLength
+End
+
 static Function PA_GetPulseToPulseLength(traceData, idx, region, pulseStartTimes, startingPulse, endingPulse, fallbackPulseLength)
 	WAVE/T traceData, pulseStartTimes
 	variable idx, region, startingPulse, endingPulse, fallbackPulseLength
 
-	variable sweepNo
+	variable pulseToPulseLength
 
-	WAVE numericalValues = $traceData[idx][%numericalValues]
-	sweepNo = str2num(traceData[idx][%sweepNumber])
-	WAVE/Z pulseToPulseLengths = GetLastSetting(numericalValues, sweepNo, PULSE_TO_PULSE_LENGTH_KEY, DATA_ACQUISITION_MODE)
+	pulseToPulseLength = PA_GetPulseToPulseLengthFromNote(traceData, idx, region)
 
-	if(!WaveExists(pulseToPulseLengths) || pulseToPulseLengths[region] == 0)
+	if(IsFinite(pulseToPulseLength))
+		// existing pulse train stimset and poisson distribution/mixed frequency turned off
+		return pulseToPulseLength
+	else
 		// either an old stim set without starting times or a new one
 		// with poission distribution/mixed frequency turned on
 		return PA_GetAveragePulseLength(pulseStartTimes, startingPulse, endingPulse, fallbackPulseLength)
-	else
-		// existing pulse train stimset and poisson distribution/mixed frequency turned off
-		return pulseToPulseLengths[region]
 	endif
 End
 
@@ -448,6 +476,10 @@ static Function PA_GetAveragePulseLength(pulseStartTimes, startingPulse, endingP
 	Extract/FREE pulseLengths, pulseLengthsClean, pulseLengths <= 2 * minimum
 
 	WaveStats/Q/M=1 pulseLengthsClean
+
+	if(CheckIfSmall(V_avg))
+		return fallbackPulseLength
+	endif
 
 	return V_avg
 End
@@ -688,7 +720,7 @@ Function PA_ShowPulses(win, dfr, pa)
 						AppendToGraph/Q/W=$graph/L=$vertAxis/B=$horizAxis/C=(red, green, blue, 65535 * 0.2) plotWave[0,inf;step]/TN=$pulseTrace
 						ModifyGraph/W=$graph userData($pulseTrace) = {sweepNumber, USERDATA_MODIFYGRAPH_REPLACE, num2str(sweepNo)}, userData($pulseTrace) = {region, USERDATA_MODIFYGRAPH_REPLACE, num2str(region)}, userData($pulseTrace) = {channelNumber, USERDATA_MODIFYGRAPH_REPLACE, channelNumberStr}, userData($pulseTrace) = {channelType, USERDATA_MODIFYGRAPH_REPLACE, channelTypeStr}, userData($pulseTrace) = {pulseIndex, USERDATA_MODIFYGRAPH_REPLACE, num2str(l)}
 						traceCount += 1
-
+						
 						printf "Trace %s, sweepNumber=%d, channelNumber=%d, pulseIndex=%d, pulseToPulseLength=%g\r", pulseTrace, sweepNo, channelNumber, l, pulseToPulseLength
 
 						if(l == startingPulse && activeRegionCount == activeChanCount && WhichListItem(channelNumberStr, referenceTraceList) == -1)
