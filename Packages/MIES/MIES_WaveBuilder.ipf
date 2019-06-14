@@ -1548,7 +1548,7 @@ Function/WAVE WB_GetPulsesFromPulseTrains(stimset, sweep, pulseToPulseLength)
 		endif
 
 		pulseToPulseLengthPerEpoch[i] = WB_GetWaveNoteEntryAsNumber(stimset, EPOCH_ENTRY, sweep = sweep, epoch = i, key = PULSE_TO_PULSE_LENGTH_KEY)
-		ASSERT(IsFinite(pulseToPulseLength), "Non-finite " + PULSE_TO_PULSE_LENGTH_KEY)
+		ASSERT(IsFinite(pulseToPulseLengthPerEpoch[i]), "Non-finite " + PULSE_TO_PULSE_LENGTH_KEY)
 
 		startTimesList = WB_GetWaveNoteEntry(stimset, EPOCH_ENTRY, sweep = sweep, epoch = i, key = PULSE_START_TIMES_KEY)
 		WAVE/Z/D startTimes = ListToNumericWave(startTimesList, ",")
