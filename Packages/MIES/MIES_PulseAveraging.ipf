@@ -689,6 +689,8 @@ Function PA_ShowPulses(win, dfr, pa)
 						ModifyGraph/W=$graph userData($pulseTrace) = {sweepNumber, USERDATA_MODIFYGRAPH_REPLACE, num2str(sweepNo)}, userData($pulseTrace) = {region, USERDATA_MODIFYGRAPH_REPLACE, num2str(region)}, userData($pulseTrace) = {channelNumber, USERDATA_MODIFYGRAPH_REPLACE, channelNumberStr}, userData($pulseTrace) = {channelType, USERDATA_MODIFYGRAPH_REPLACE, channelTypeStr}, userData($pulseTrace) = {pulseIndex, USERDATA_MODIFYGRAPH_REPLACE, num2str(l)}
 						traceCount += 1
 
+						printf "Trace %s, sweepNumber=%d, channelNumber=%d, pulseIndex=%d, pulseToPulseLength=%g\r", pulseTrace, sweepNo, channelNumber, l, pulseToPulseLength
+
 						if(l == startingPulse && activeRegionCount == activeChanCount && WhichListItem(channelNumberStr, referenceTraceList) == -1)
 							SetWindow $graph, userData($PA_USERDATA_REFERENCE_TRACES) += pulseTrace + ";"
 							referenceTraceList = AddListItem(channelNumberStr, referenceTraceList)
