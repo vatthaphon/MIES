@@ -976,6 +976,8 @@ static Function/WAVE WB_MakeWaveBuilderWave(WP, WPT, SegWvType, stepCount, numEp
 			WB_UpdateEpochID(i, params.duration, accumulatedDuration)
 		endif
 
+		accumulatedDuration += params.duration
+
 		WAVE segmentWave = GetSegmentWave()
 		Concatenate/NP=0 {segmentWave}, WaveBuilderWave
 	endfor
@@ -1015,12 +1017,12 @@ End
 
 /// @brief Update the accumulated stimset duration for the mouse selection via GetEpochID()
 ///
-/// @param[in]      epochIndex          index of the epoch
-/// @param[in]      epochDuration       duration of the current segment
-/// @param[in, out] accumulatedDuration accumulated duration in the stimset for the first step
+/// @param[in] epochIndex          index of the epoch
+/// @param[in] epochDuration       duration of the current segment
+/// @param[in] accumulatedDuration accumulated duration in the stimset for the first step
 static Function WB_UpdateEpochID(epochIndex, epochDuration, accumulatedDuration)
 	variable epochIndex, epochDuration
-	variable &accumulatedDuration
+	variable accumulatedDuration
 
 	WAVE epochID = GetEpochID()
 	if(epochIndex == 0)
@@ -1029,8 +1031,6 @@ static Function WB_UpdateEpochID(epochIndex, epochDuration, accumulatedDuration)
 
 	epochID[epochIndex][%timeBegin] = accumulatedDuration
 	epochID[epochIndex][%timeEnd]   = accumulatedDuration + epochDuration
-
-	accumulatedDuration += epochDuration
 End
 
 /// @brief Query the stimset wave note for the sweep/set specific ITI
