@@ -2443,6 +2443,7 @@ Function DAP_CheckSettings(panelTitle, mode)
 					continue
 				endif
 
+				// @TODO investigate
 				if(GetValDisplayAsNum(panelTitle, "valdisp_DataAcq_SweepsInSet") == 0 \
 				   && CmpStr(allSetNames[i], STIMSET_TP_WHILE_DAQ))
 					printf "(%s) The calculated number of sweeps is zero. This is unexpected and very likely a bug.\r", panelTitle
