@@ -98,7 +98,7 @@ Function/WAVE AR_ComputeRanges(sweepDFR, sweepNo, numericalValues)
 	return ranges
 End
 
-Function AR_UpdatePanel(panelTitle, ranges, sweepDFR)
+static Function AR_UpdatePanel(panelTitle, ranges, sweepDFR)
 	string panelTitle
 	WAVE ranges
 	DFREF sweepDFR
@@ -115,7 +115,7 @@ Function AR_UpdatePanel(panelTitle, ranges, sweepDFR)
 	AR_UpdateListBoxWave(panelTitle)
 End
 
-Function AR_UpdateListBoxWave(panelTitle)
+static Function AR_UpdateListBoxWave(panelTitle)
 	string panelTitle
 
 	variable cutoffLength_before, cutoffLength_after
@@ -201,7 +201,7 @@ Function AR_HighlightArtefactsEntry(graph)
 	endfor
 End
 
-Function AR_HandleRanges(graph, [removeRange])
+static Function AR_HandleRanges(graph, [removeRange])
 	string graph
 	variable removeRange
 

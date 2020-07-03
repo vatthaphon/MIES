@@ -21,6 +21,7 @@ Function FinalUpdateHookProto(graph)
 	string graph
 End
 
+// TODO disband
 Structure PostPlotSettings
 	/// @name Trace averaging settings
 	/// @{
@@ -41,14 +42,14 @@ Structure PostPlotSettings
 	variable timeAlignLevel
 	/// @}
 
-	STRUCT PulseAverageSettings pulseAverSett
+	STRUCT BSP_PulseAverageSettings pulseAverSett
 
 	/// Hook function which is called at the very end of #PostPlotTransformations
 	FUNCREF FinalUpdateHookProto finalUpdateHook
 EndStructure
 
-Function InitPulseAverageSettings(pa)
-	STRUCT PulseAverageSettings &pa
+Function InitBSP_PulseAverageSettings(pa)
+	STRUCT BSP_PulseAverageSettings &pa
 
 	pa.showIndividualTraces = NaN
 	pa.showAverageTrace     = NaN
@@ -60,19 +61,6 @@ Function InitPulseAverageSettings(pa)
 	pa.zeroTraces           = NaN
 	pa.autoTimeAlignment    = NaN
 End
-
-Structure PulseAverageSettings
-	variable showIndividualTraces, showAverageTrace
-	variable startingPulse, endingPulse, regionSlider
-	variable fallbackPulseLength, multipleGraphs
-	variable zeroTraces, autoTimeAlignment
-
-	STRUCT PulseAverageDeconvSettings deconvolution
-EndStructure
-
-Structure PulseAverageDeconvSettings
-	variable enable, smth, tau, range
-EndStructure
 
 /// @brief Parameter to #CreateTiledChannelGraph
 Structure TiledGraphSettings
@@ -253,3 +241,97 @@ Structure HardwareDataTPInput
 	WAVE DAGain, DACAmpTP
 	variable testPulseLength, baselineFrac
 EndStructure
+
+
+/// @brief BrowserSettingsPanel
+/// @{
+
+// TAB 0
+Structure BSP_Settings
+	variable displayDAC
+	variable displayADC
+	variable displayTTL
+	variable splitTTLBits
+	variable overlayChannels
+	variable dDAQDisplayMode
+	variable dDAQHeadstageRegions
+	variable hideSweep
+	Struct BSP_TimeAlignmentSettings timeAlignment
+	variable averageTraces
+	variable zeroTraces
+	Struct BSP_AxesScaling axesScaling
+	Struct BSP_OverlaySweeps overlaySweeps
+EndStructure
+
+// TAB 0, Time alignment (on sweep data, not pulse average)
+Structure BSP_TimeAlignmentSettings
+	variable enabled
+	variable timeAlignMode //< one of #TimeAlignmentConstants
+	string timeAlignRefTrace
+	variable timeAlignLevel
+EndStructure
+
+// TAB 0, Axis scaling
+Structure BSP_AxesScaling
+	variable visualXRange
+EndStructure
+
+// TAB 1
+Structure BSP_OverlaySweeps
+	variable enabled
+	// Select, Offset, Step only change what is in the listbox
+	variable highlightSweep	// TODO switch that to hold the sweep number to highlight, or NaN if disabled
+	variable headstageRemoval
+	variable clearOnNewRAC
+	variable clearOnNewSCI
+	// listbox: GetOverlaySweepsListWave
+	// selected sweeps: OVS_GetSelectedSweeps
+EndStructure
+
+// TAB 2
+Structure BSP_ChannelSelection
+	// selected channels: BSP_GetChannelSelectionWave
+EndStructure
+
+// TAB 3
+Structure BSP_ArtefactRemoval
+	variable enabled
+	// Cutoff length, before and after, only influence the contents of the listbox
+	variable autoRemove
+	variable highlightRanges
+EndStructure
+
+// TAB 4
+Structure BSP_PulseAverageSettings
+	variable showIndividualTraces
+	variable zeroTraces 
+	variable showAverageTrace
+	variable multipleGraphs
+	variable startingPulse, endingPulse, fallbackPulseLength
+	STRUCT BSP_PulseAverageDeconvSettings deconvolution
+	variable autoTimeAlignment
+	// TODO remove, same as BSP_Settings::dDAQHeadstageRegions
+	variable regionSlider
+EndStructure
+
+// TAB 4, Deconvolution
+Structure BSP_PulseAverageDeconvSettings
+	variable enabled, smth, tau, range
+EndStructure
+
+// TAB 5
+Structure BSP_SweepFormula
+	variable enabled
+	// Formula: BSP_GetSFFormula
+EndStructure
+
+// TAB6
+// Nothing for the note
+
+// TAB 6
+Structure BSP_Dashboard
+	// TODO currently this calls AD_SelectResult and calls UpdateSweepPlot
+	variable passed, failed
+EndStructure
+
+/// @}

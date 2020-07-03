@@ -313,7 +313,7 @@ Function PA_GatherSettings(win, pps)
 	extPanel = BSP_GetPanel(win)
 
 	if(!PA_IsActive(win))
-		InitPulseAverageSettings(pps.pulseAverSett)
+		InitBSP_PulseAverageSettings(pps.pulseAverSett)
 		return 0
 	endif
 
@@ -333,20 +333,20 @@ End
 /// @brief gather deconvolution settings from PA section in BSP
 Function PA_DeconvGatherSettings(win, deconvolution)
 	string win
-	STRUCT PulseAverageDeconvSettings &deconvolution
+	STRUCT BSP_PulseAverageDeconvSettings &deconvolution
 
 	string bsPanel = BSP_GetPanel(win)
 
-	deconvolution.enable = PA_DeconvolutionIsActive(win)
-	deconvolution.smth   = GetSetVariable(bsPanel, "setvar_pulseAver_deconv_smth")
-	deconvolution.tau    = GetSetVariable(bsPanel, "setvar_pulseAver_deconv_tau")
-	deconvolution.range  = GetSetVariable(bsPanel, "setvar_pulseAver_deconv_range")
+	deconvolution.enabled = PA_DeconvolutionIsActive(win)
+	deconvolution.smth    = GetSetVariable(bsPanel, "setvar_pulseAver_deconv_smth")
+	deconvolution.tau     = GetSetVariable(bsPanel, "setvar_pulseAver_deconv_tau")
+	deconvolution.range   = GetSetVariable(bsPanel, "setvar_pulseAver_deconv_range")
 End
 
 Function PA_ShowPulses(win, dfr, pa)
 	string win
 	DFREF dfr
-	STRUCT PulseAverageSettings &pa
+	STRUCT BSP_PulseAverageSettings &pa
 
 	string graph, preExistingGraphs
 	string averageWaveName, convolutionWaveName, pulseTrace, channelTypeStr, str, traceList, traceFullPath
@@ -571,7 +571,7 @@ Function PA_ShowPulses(win, dfr, pa)
 			activeChanCount = 0
 			channelList     = ""
 
-			if(pa.showAverageTrace || pa.deconvolution.enable || pa.multipleGraphs)
+			if(pa.showAverageTrace || pa.deconvolution.enabled || pa.multipleGraphs)
 				// handle graph legends and average calculation
 				for(k = 0; k < numChannelTypeTraces; k += 1)
 					idx       = indizesChannelType[k]
@@ -618,7 +618,7 @@ Function PA_ShowPulses(win, dfr, pa)
 						listOfWavesPerChannel[channelNumber] = ""
 					endif
 
-					if(pa.deconvolution.enable && !isDiagonalElement && !IsEmpty(listOfWaves))
+					if(pa.deconvolution.enabled && !isDiagonalElement && !IsEmpty(listOfWaves))
 						if(!WaveExists(averageWave))
 							WAVE averageWave = PA_Average(listOfWaves, pulseAverageDFR, PA_AVERAGE_WAVE_PREFIX + baseName)
 						endif
@@ -731,7 +731,7 @@ End
 
 Function/WAVE PA_SmoothDeconv(input, deconvolution)
 	WAVE input
-	STRUCT PulseAverageDeconvSettings &deconvolution
+	STRUCT BSP_PulseAverageDeconvSettings &deconvolution
 
 	variable range_pnts, smoothingFactor
 	string key
@@ -756,7 +756,7 @@ Function/WAVE PA_Deconvolution(average, outputDFR, outputWaveName, deconvolution
 	WAVE average
 	DFREF outputDFR
 	string outputWaveName
-	STRUCT PulseAverageDeconvSettings &deconvolution
+	STRUCT BSP_PulseAverageDeconvSettings &deconvolution
 
 	variable step
 	string key
@@ -903,7 +903,7 @@ Function PA_UpdateSweepPlotDeconvolution(win, show)
 	string traceName, fullPath, avgTrace
 	string baseName, bsPanel
 	variable i, numGraphs, j, numTraces, traceIndex
-	STRUCT PulseAverageDeconvSettings deconvolution
+	STRUCT BSP_PulseAverageDeconvSettings deconvolution
 
 	win = GetMainWindow(win)
 	if(!PA_IsActive(win))
@@ -1020,10 +1020,10 @@ End
 //
 // @param listOfWaves  A semicolon separated list of full paths to the waves that need to
 //                     get tested
-// @param pa           Filled PulseAverageSettings structure. @see PA_GatherSettings
+// @param pa           Filled BSP_PulseAverageSettings structure. @see PA_GatherSettings
 static Function PA_ResetWavesIfRequired(listOfWaves, pa)
 	string listOfWaves
-	STRUCT PulseAverageSettings &pa
+	STRUCT BSP_PulseAverageSettings &pa
 
 	variable i, statusZero, statusTimeAlign, numEntries
 	WAVE/WAVE wv = ListToWaveRefWave(listOfWaves, 1)

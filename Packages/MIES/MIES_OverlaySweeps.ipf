@@ -385,6 +385,7 @@ End
 /// @param[in] 		index 			[optional] specify sweep directly by index
 /// @return free wave of size `NUM_HEADSTAGES` denoting with 0/1 the active state
 ///         of the headstage
+/// TODO use MRS
 Function/WAVE OVS_ParseIgnoreList(win, highlightSweep, [sweepNo, index])
 	string win
 	variable sweepNo, index, &highlightSweep

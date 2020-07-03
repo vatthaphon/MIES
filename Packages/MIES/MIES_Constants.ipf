@@ -369,6 +369,8 @@ Constant MIES_BSP_SF  = 5
 strConstant MIES_BSP_BROWSER = "BROWSER"
 strConstant MIES_BSP_DEVICE = "DEVICE"
 strConstant MIES_BSP_PANEL_FOLDER = "PANEL_FOLDER"
+// TODO disband, used for communication between AR_UpdatePanel and AR_HandleRanges
+// use a global string instead if we really need that functionality
 strConstant MIES_BSP_AR_SWEEPFOLDER = "AR_SWEEPFOLDER"
 strConstant MIES_BSP_PA_MAINPANEL = "HOSTWINDOW"
 /// @}

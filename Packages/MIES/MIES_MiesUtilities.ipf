@@ -2114,6 +2114,9 @@ Function CreateTiledChannelGraph(graph, config, sweepNo, numericalValues,  textu
 								"textualValues", "numericalValues", "clampMode", "experiment", "traceType", \
 								"occurence", "XAXIS", "YAXIS", "YRANGE"}
 
+	printf "sweep number %d", sweepNo
+	print tgs
+
 	WAVE ADCs = GetADCListFromConfig(config)
 	WAVE DACs = GetDACListFromConfig(config)
 	WAVE TTLs = GetTTLListFromConfig(config)
@@ -3465,6 +3468,7 @@ Function TimeAlignUpdateControls(win)
 	TimeAlignHandleCursorDisplay(graph)
 End
 
+// TODO disband
 Function TimeAlignGatherSettings(bsPanel, pps)
 	String bsPanel
 	STRUCT PostPlotSettings &pps
