@@ -365,6 +365,7 @@ static Function OVS_AddToIgnoreList(win, headstage, [sweepNo, index])
 	endif
 
 	listboxWave[index][%headstages] = AddListItem(num2str(headstage), listboxWave[index][%headstages], ";", inf)
+	// TODO no update
 	UpdateSweepPlot(win)
 End
 
@@ -380,21 +381,18 @@ End
 /// - * (ignore all headstages)
 ///
 /// @param[in] 		win				name of mainPanel
-/// @param[out] 	highlightSweep 	return of OVS_IsSweepHighlighted, defaults to no sweep highlighted
 /// @param[in] 		sweepNo 		[optional] search sweepNo in list to get index
 /// @param[in] 		index 			[optional] specify sweep directly by index
 /// @return free wave of size `NUM_HEADSTAGES` denoting with 0/1 the active state
 ///         of the headstage
 /// TODO use MRS
-Function/WAVE OVS_ParseIgnoreList(win, highlightSweep, [sweepNo, index])
+Function/WAVE OVS_ParseIgnoreList(win, [sweepNo, index])
 	string win
-	variable sweepNo, index, &highlightSweep
+	variable sweepNo, index
 
 	variable numEntries, i, start, stop, step
 	string ignoreList, subRangeStr, extPanel
 
-	// set default
-	highlightSweep = NaN // no sweep highlighted
 	if(!OVS_IsActive(win))
 		return $""
 	endif
@@ -419,8 +417,6 @@ Function/WAVE OVS_ParseIgnoreList(win, highlightSweep, [sweepNo, index])
 	if(index < 0 || index >= DimSize(listBoxWave, ROWS) || !IsFinite(index))
 		ASSERT(index != -1, "Invalid sweepNo/index")
 	endif
-
-	highlightSweep = OVS_IsSweepHighlighted(listboxWave, index)
 
 	ignoreList = listboxWave[index][%headstages]
 	numEntries = ItemsInList(ignoreList)
@@ -471,6 +467,7 @@ Function OVS_CheckBoxProc_HS_Select(cba) : CheckBoxControl
 				listBoxSelWave[][%Headstages] = ClearBit(listBoxSelWave[p][%Headstages], LISTBOX_CELL_EDITABLE)
 			endif
 
+			// TODO no update
 			UpdateSweepPlot(win)
 		break
 	endswitch
@@ -488,22 +485,6 @@ static Function OVS_HighlightSweep(win, index)
 	WAVE/T listboxWave = GetOverlaySweepsListWave(dfr)
 
 	SetDimLabel ROWS, -1, $num2str(index), listboxWave
-End
-
-/// @brief Return the state of the sweep highlightning
-///
-/// @return NaN no sweep highlighted, or 1/0 if index needs highlightning or not
-static Function OVS_IsSweepHighlighted(listBoxWave, index)
-	WAVE/T listBoxWave
-	variable index
-
-	variable state = str2num(GetDimLabel(listBoxWave, ROWS, -1))
-
-	if(!IsFinite(state))
-		return NaN
-	endif
-
-	return state == index
 End
 
 /// @brief Change the selected sweep according to one of the popup menu options
@@ -567,24 +548,23 @@ Function OVS_MainListBoxProc(lba) : ListBoxControl
 		case 6: //begin edit
 			win = lba.win
 			OVS_HighlightSweep(win, lba.row)
+			// TODO no update
 			UpdateSweepPlot(win)
 			break
 		case 7:  // end edit
 			win = lba.win
 			OVS_HighlightSweep(win, NaN)
+			// TODO no update
 			UpdateSweepPlot(win)
 			break
 		case 13: // checkbox clicked
 			win = lba.win
 			if(lba.selWave[lba.row] & LISTBOX_CHECKBOX_SELECTED)
+				// TODO no update
 				UpdateSweepPlot(win)
 			else
-				if(BSP_IsDataBrowser(win))
-					sweepNo = str2num(lba.listWave[lba.row][%Sweep])
-					DB_RemoveSweepFromGraph(win, sweepNo)
-				else
-					UpdateSweepPlot(win)
-				endif
+				sweepNo = str2num(lba.listWave[lba.row][%Sweep])
+				RemoveSweepFromGraph(win, sweepNo)
 			endif
 			break
 	endswitch

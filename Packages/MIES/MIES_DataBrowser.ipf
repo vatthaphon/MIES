@@ -429,8 +429,7 @@ Function DB_UpdateSweepPlot(win)
 			continue
 		endif
 
-		WAVE/Z activeHS = OVS_ParseIgnoreList(win, highlightSweep, sweepNo=sweepNo)
-		tgs.highlightSweep = highlightSweep
+		WAVE/Z activeHS = OVS_ParseIgnoreList(win, sweepNo=sweepNo)
 
 		if(WaveExists(activeHS))
 			Duplicate/FREE channelSel, sweepChannelSel
@@ -460,7 +459,7 @@ End
 
 Function DB_RemoveSweepFromGraph(string win, variable sweepNo)
 
-	string device
+	string device, experiment
 
 	if(!BSP_HasBoundDevice(win))
 		return NaN
@@ -470,33 +469,9 @@ Function DB_RemoveSweepFromGraph(string win, variable sweepNo)
 
 	DFREF deviceData = GetDeviceDataPath(device)
 	WAVE numericalValues = DB_GetNumericalValues(win)
+	experiment = GetExperimentName()
 
-	RemoveSweepFromGraph(win, deviceData, numericalValues, sweepNo)
-End
-
-Function RemoveSweepFromGraph(string win, DFREF deviceData, WAVE numericalValues, variable sweepNo)
-
-	variable i, numTraces
-	string trace, graph
-
-	graph  = GetMainWindow(win)
-
-	WAVE/T/Z traces = TUD_GetUserDataAsWave(graph, "tracename", keys = {"traceType", "sweepNumber"}, values = {"sweep", num2str(sweepNo)})
-
-	if(!WaveExists(traces))
-		return NaN
-	endif
-
-	numTraces = DimSize(traces, ROWS)
-	for(i = 0; i < numTraces; i += 1)
-		trace = traces[i]
-
-		RemoveFromGraph/W=$graph $trace
-		TUD_RemoveUserData(graph, trace)
-	endfor
-
-	AR_UpdateTracesIfReq(graph, deviceData, numericalValues, sweepNo)
-	PostPlotTransformations(graph)
+	RemoveSweepFromGraphImplementation(win, deviceData, numericalValues, experiment, sweepNo)
 End
 
 static Function DB_UpdateSweepNote(win)

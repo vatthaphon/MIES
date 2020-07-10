@@ -783,6 +783,7 @@ Function PA_CheckProc_Common(cba) : CheckBoxControl
 
 	switch(cba.eventCode)
 		case 2: // mouse up
+			// TODO why an all update?
 			UpdateSweepPlot(cba.win)
 			break
 	endswitch
@@ -796,6 +797,7 @@ Function PA_CheckProc_Individual(cba) : CheckBoxControl
 	switch(cba.eventCode)
 		case 2: // mouse up
 			BSP_SetIndividualControlStatus(cba.win)
+			// TODO why an all update?
 			UpdateSweepPlot(cba.win)
 			break
 	endswitch
@@ -809,6 +811,7 @@ Function PA_CheckProc_Average(cba) : CheckBoxControl
 	switch(cba.eventCode)
 		case 2: // mouse up
 			BSP_SetDeconvControlStatus(cba.win)
+			// TODO why an all update?
 			UpdateSweepPlot(cba.win)
 			break
 	endswitch
@@ -838,6 +841,7 @@ Function PA_SetVarProc_Common(sva) : SetVariableControl
 		case 1: // mouse up
 		case 2: // Enter key
 		case 3: // Live update
+			// TODO why an all update?
 			UpdateSweepPlot(sva.win)
 			break
 	endswitch

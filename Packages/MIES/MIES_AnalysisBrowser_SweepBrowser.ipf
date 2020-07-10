@@ -293,7 +293,7 @@ Function SB_UpdateSweepPlot(win, [newSweep])
 	variable newSweep
 
 	string device, dataFolder, graph, bsPanel, scPanel, lbPanel, experiment
-	variable mapIndex, i, numEntries, sweepNo, highlightSweep, traceIndex, currentSweep
+	variable mapIndex, i, numEntries, sweepNo, traceIndex, currentSweep
 
 	graph = GetMainWindow(win)
 	bsPanel   = BSP_GetPanel(graph)
@@ -350,8 +350,7 @@ Function SB_UpdateSweepPlot(win, [newSweep])
 		experiment = sweepMap[mapIndex][%FileName]
 		sweepNo    = str2num(sweepMap[mapIndex][%Sweep])
 
-		WAVE/Z activeHS = OVS_ParseIgnoreList(graph, highlightSweep, index=mapIndex)
-		tgs.highlightSweep = highlightSweep
+		WAVE/Z activeHS = OVS_ParseIgnoreList(graph, index=mapIndex)
 
 		if(WaveExists(activeHS))
 			Duplicate/FREE channelSel, sweepChannelSel
@@ -383,6 +382,30 @@ Function SB_UpdateSweepPlot(win, [newSweep])
 
 	PostPlotTransformations(graph)
 	SetAxesRanges(graph, axesRanges)
+End
+
+Function SB_RemoveSweepFromGraph(string win, variable index)
+
+	string device, graph, dataFolder, experiment
+	variable sweepNo
+
+	if(!BSP_HasBoundDevice(win))
+		return NaN
+	endif
+
+	graph = GetMainWindow(win)
+	DFREF sweepBrowserDFR = SB_GetSweepBrowserFolder(graph)
+	WAVE/T sweepMap = SB_GetSweepBrowserMap(sweepBrowserDFR)
+
+	dataFolder = sweepMap[index][%DataFolder]
+	device     = sweepMap[index][%Device]
+	experiment = sweepMap[index][%FileName]
+	sweepNo    = str2num(sweepMap[index][%Sweep])
+
+	WAVE numericalValues = GetAnalysLBNumericalValues(dataFolder, device)
+	DFREF sweepDFR       = GetAnalysisSweepPath(dataFolder, device)
+
+	RemoveSweepFromGraphImplementation(win, sweepDFR, numericalValues, experiment, sweepNo)
 End
 
 Function SB_AddToSweepBrowser(sweepBrowser, fileName, dataFolder, device, sweep)

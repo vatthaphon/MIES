@@ -2095,7 +2095,7 @@ Function CreateTiledChannelGraph(graph, config, sweepNo, numericalValues,  textu
 	string experiment
 	WAVE/Z channelSelWave
 
-	variable red, green, blue, alpha, axisIndex, numChannels, offset
+	variable red, green, blue, axisIndex, numChannels, offset
 	variable numDACs, numADCs, numTTLs, i, j, k, hasPhysUnit, slotMult, hardwareType
 	variable moreData, low, high, step, spacePerSlot, chan, numSlots, numHorizWaves, numVertWaves, idx
 	variable numTTLBits, colorIndex, totalVertBlocks, headstage
@@ -2443,7 +2443,6 @@ Function CreateTiledChannelGraph(graph, config, sweepNo, numericalValues,  textu
 				sprintf str, "colorIndex=%d", colorIndex
 				DEBUGPRINT(str)
 
-				alpha = (IsNaN(tgs.highlightSweep) || tgs.highlightSweep == 1) ? 65535 : 0.05 * 65535
 				DEBUGPRINT("")
 				first = 0
 
@@ -2513,11 +2512,11 @@ Function CreateTiledChannelGraph(graph, config, sweepNo, numericalValues,  textu
 					if(!IsFinite(xRangeStart) && !IsFinite(XRangeEnd))
 						horizAxis = "bottom"
 						traceRange = "[][0]"
-						AppendToGraph/W=$graph/B=$horizAxis/L=$vertAxis/C=(red, green, blue, alpha) wv[][0]/TN=$trace
+						AppendToGraph/W=$graph/B=$horizAxis/L=$vertAxis/C=(red, green, blue, 65535) wv[][0]/TN=$trace
 					else
 						horizAxis = vertAxis + "_b"
 						sprintf traceRange, "[%g,%g][0]", xRangeStart, xRangeEnd
-						AppendToGraph/W=$graph/L=$vertAxis/B=$horizAxis/C=(red, green, blue, alpha) wv[xRangeStart, xRangeEnd][0]/TN=$trace
+						AppendToGraph/W=$graph/L=$vertAxis/B=$horizAxis/C=(red, green, blue, 65535) wv[xRangeStart, xRangeEnd][0]/TN=$trace
 						first = first
 						last  = first + (xRangeEnd - xRangeStart) / totalXRange
 						ModifyGraph/W=$graph axisEnab($horizAxis)={first, min(last, 1.0)}
@@ -6217,4 +6216,38 @@ Function/WAVE GetTraceInfos(string graph)
 	SortColumns/A/DIML/KNDX={2, 3, 4, 5} sortWaves=graphUserDataSelection
 
 	return graphUserDataSelection
+End
+
+Function RemoveSweepFromGraph(string win, variable sweepNo)
+
+	if(BSP_IsDataBrowser(win))
+		DB_RemoveSweepFromGraph(win, sweepNo)
+	else
+		SB_RemoveSweepFromGraph(win, sweepNo)
+	endif
+End
+
+Function RemoveSweepFromGraphImplementation(string win, DFREF deviceData, WAVE numericalValues, string experiment, variable sweepNo)
+
+	variable i, numTraces
+	string trace, graph
+
+	graph  = GetMainWindow(win)
+
+	WAVE/T/Z traces = TUD_GetUserDataAsWave(graph, "tracename", keys = {"traceType", "sweepNumber", "experiment"}, values = {"sweep", num2str(sweepNo), experiment})
+
+	if(!WaveExists(traces))
+		return NaN
+	endif
+
+	numTraces = DimSize(traces, ROWS)
+	for(i = 0; i < numTraces; i += 1)
+		trace = traces[i]
+
+		RemoveFromGraph/W=$graph $trace
+		TUD_RemoveUserData(graph, trace)
+	endfor
+
+	AR_UpdateTracesIfReq(graph, deviceData, numericalValues, sweepNo)
+	PostPlotTransformations(graph)
 End
