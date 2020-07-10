@@ -458,6 +458,47 @@ Function DB_UpdateSweepPlot(win)
 	DEBUGPRINT_ELAPSED(referenceTime)
 End
 
+Function DB_RemoveSweepFromGraph(string win, variable sweepNo)
+
+	string device
+
+	if(!BSP_HasBoundDevice(win))
+		return NaN
+	endif
+
+	device = BSP_GetDevice(win)
+
+	DFREF deviceData = GetDeviceDataPath(device)
+	WAVE numericalValues = DB_GetNumericalValues(win)
+
+	RemoveSweepFromGraph(win, deviceData, numericalValues, sweepNo)
+End
+
+Function RemoveSweepFromGraph(string win, DFREF deviceData, WAVE numericalValues, variable sweepNo)
+
+	variable i, numTraces
+	string trace, graph
+
+	graph  = GetMainWindow(win)
+
+	WAVE/T/Z traces = TUD_GetUserDataAsWave(graph, "tracename", keys = {"traceType", "sweepNumber"}, values = {"sweep", num2str(sweepNo)})
+
+	if(!WaveExists(traces))
+		return NaN
+	endif
+
+	numTraces = DimSize(traces, ROWS)
+	for(i = 0; i < numTraces; i += 1)
+		trace = traces[i]
+
+		RemoveFromGraph/W=$graph $trace
+		TUD_RemoveUserData(graph, trace)
+	endfor
+
+	AR_UpdateTracesIfReq(graph, deviceData, numericalValues, sweepNo)
+	PostPlotTransformations(graph)
+End
+
 static Function DB_UpdateSweepNote(win)
 	string win
 

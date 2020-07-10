@@ -561,6 +561,7 @@ Function OVS_MainListBoxProc(lba) : ListBoxControl
 	STRUCT WMListboxAction &lba
 
 	string win
+	variable sweepNo
 
 	switch(lba.eventCode)
 		case 6: //begin edit
@@ -575,7 +576,16 @@ Function OVS_MainListBoxProc(lba) : ListBoxControl
 			break
 		case 13: // checkbox clicked
 			win = lba.win
-			UpdateSweepPlot(win)
+			if(lba.selWave[lba.row] & LISTBOX_CHECKBOX_SELECTED)
+				UpdateSweepPlot(win)
+			else
+				if(BSP_IsDataBrowser(win))
+					sweepNo = str2num(lba.listWave[lba.row][%Sweep])
+					DB_RemoveSweepFromGraph(win, sweepNo)
+				else
+					UpdateSweepPlot(win)
+				endif
+			endif
 			break
 	endswitch
 
