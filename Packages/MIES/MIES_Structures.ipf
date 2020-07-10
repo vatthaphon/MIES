@@ -17,10 +17,6 @@ Structure BackgroundStruct
 	int32 threadDeadCount ///< TP-MD only: Number of successive tries to get data from the thread
 EndStructure
 
-Function FinalUpdateHookProto(graph)
-	string graph
-End
-
 // TODO disband
 Structure PostPlotSettings
 	/// @name Trace averaging settings
@@ -43,9 +39,6 @@ Structure PostPlotSettings
 	/// @}
 
 	STRUCT BSP_PulseAverageSettings pulseAverSett
-
-	/// Hook function which is called at the very end of #PostPlotTransformations
-	FUNCREF FinalUpdateHookProto finalUpdateHook
 EndStructure
 
 Function InitBSP_PulseAverageSettings(pa)
